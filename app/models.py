@@ -1,16 +1,11 @@
 # app/models.py
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, func
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
 
 from app.databases import Base
 
-# ---------------------------------
-# ✅ SQLAlchemy Models (DB Tables)
-# ---------------------------------
-
-# User Table
 class User(Base):
     __tablename__ = "users"
 
@@ -22,23 +17,13 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-
-# ---------------------------------
-# ✅ Pydantic Models (Validation)
-# ---------------------------------
-
-# Base model for User
 class UserBase(BaseModel):
-    username: str
+    username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
 
-
-# Model for user registration
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8)
 
-
-# Model for API response
 class UserResponse(UserBase):
     id: int
     is_active: bool
@@ -46,15 +31,11 @@ class UserResponse(UserBase):
     updated_at: Optional[datetime] = None
 
     class Config:
-        from_attributes = True  # ✅ Pydantic v2 compatibility
+        from_attributes = True
 
-
-# Model for authentication token
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-
-# Token data model
 class TokenData(BaseModel):
     username: Optional[str] = None

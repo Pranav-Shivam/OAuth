@@ -5,18 +5,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
 import os
 
-# Load environment variables
 load_dotenv()
 
-# Database URL from .env
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable not set")
 
-# SQLAlchemy engine
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Dependency to get DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -24,7 +22,6 @@ def get_db():
     finally:
         db.close()
 
-# Initialize database
 def init_db():
     from app.models import User
     Base.metadata.create_all(bind=engine)
